@@ -1,7 +1,7 @@
 {
-  "name": "3dfolio",
+  "name": "transportlive",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run start\"",
