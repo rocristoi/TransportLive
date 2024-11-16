@@ -1,0 +1,12 @@
+
+{
+  "name": "transportlive-backend",
+  "version": "1.0.0",
+  "main": "cors-proxy.js",
+  "scripts": {
+    "start": "node cors-proxy.js"
+  },
+  "dependencies": {
+    "cors-anywhere": "^0.4.4"
+  }
+}
