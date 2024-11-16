@@ -3,13 +3,13 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "scripts": {
-    "dev": "concurrently \"npm run server\" \"npm run start\"",
-    "start": "vite preview",
-    "build": "vite build",
-    "server": "node proxy-server.js",
-    "postinstall": "npm run build"
-  },
+"scripts": {
+  "dev": "concurrently \"npm run server\" \"vite\"",
+  "start": "node server.js",
+  "build": "vite build",
+  "server": "node proxy-server.js",
+  "postinstall": "npm run build"
+},
   "dependencies": {
     "cors-anywhere": "^0.4.4",
     "framer-motion": "^9.0.7",
@@ -28,7 +28,5 @@
     "autoprefixer": "^10.4.13",
     "concurrently": "^9.1.0",
     "postcss": "^8.4.21",
-    "tailwindcss": "^3.2.6",
-    "vite": "^4.5.5"
-  }
+    "tailwindcss": "^3.2.6"  }
 }
