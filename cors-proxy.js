@@ -1,13 +1,13 @@
 const corsAnywhere = require('cors-anywhere');
 const http = require('http');
 
-const host = '0.0.0.0'; // Listen on all interfaces
-const port = 8080;
+const host = '0.0.0.0'; 
+const port = process.env.PORT || 8080;
 
 const server = http.createServer((req, res) => {
   corsAnywhere.createServer({
-    originWhitelist: [], // Allow all origins
-    requireHeaders: ['origin', 'x-requested-with'], // Ensure these headers are included
+    originWhitelist: [], 
+    requireHeaders: ['origin', 'x-requested-with'], 
   }).emit('request', req, res);
 });
 
