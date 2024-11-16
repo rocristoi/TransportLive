@@ -1,4 +1,5 @@
-# TransportLive
+
+#  ![Small Logo](https://i.imgur.com/cZml8QG.png)  TransportLive 
 
 TransportLive is an application that fetches real-time transport data from the new **Societate de Transport București (STB)** API. By entering a station ID, the app displays the upcoming vehicles and their estimated arrival times, helping you plan your journey in Bucharest with ease.
 
