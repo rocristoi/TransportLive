@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run start\"",
     "start": "vite",
+    "build": "vite build",
     "server": "node proxy-server.js"
   },
   "dependencies": {
