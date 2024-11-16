@@ -73,7 +73,7 @@ If you'd like to contribute to TransportLive, follow these steps:
 *Please make sure your changes are well-documented, and ensure the app works as expected before submitting your PR.*
 
 ## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the  [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 1. Thank you to the STB (Societate de Transport București) and to the cool IT team @ TPBI for finally providing the public transport API.
