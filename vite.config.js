@@ -7,10 +7,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8080', // CORS proxy server
+        target: 'https://transportlive-cors-proxy-4226bad6419b.herokuapp.com/', // CORS proxy server
         changeOrigin: true,
         rewrite: (path) => {
-          // Remove '/api' and forward the remaining part to the proxy server
           const newPath = path.replace(/^\/api\//, '/');
           return newPath;
         },
