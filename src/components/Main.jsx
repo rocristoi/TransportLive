@@ -18,7 +18,7 @@ const LinesComponent = ({  stationID, onRemove, onNull, directionVisible  }) => 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`/api/https://maps.mo-bi.ro/api/nextArrivals/${stationID}`);
+        const response = await fetch(`/https://maps.mo-bi.ro/api/nextArrivals/${stationID}`);
         const data = await response.json();
         if (Object.keys(data).length === 0) {
           console.warn('Received empty data:', data);
