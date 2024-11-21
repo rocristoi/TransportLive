@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { styles } from "../styles";
@@ -8,6 +8,125 @@ import { CiLocationArrow1 } from "react-icons/ci";
 import { GrDirections } from "react-icons/gr";
 import { GoEyeClosed } from "react-icons/go";
 import Switch from "react-switch";
+import Papa from 'papaparse';  
+
+
+import { FixedSizeList as List } from "react-window";
+
+const CsvLoader = () => {
+  const [data, setData] = useState([]);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredData, setFilteredData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCSV();
+  }, []);
+
+  const fetchCSV = async () => {
+    try {
+      const response = await fetch('/data/stops.csv');
+      const csvText = await response.text();
+
+      Papa.parse(csvText, {
+        header: true,
+        dynamicTyping: true,
+        worker: true,
+        complete: (result) => {
+          const parsedData = result.data.filter(filterRow);
+          setData(parsedData);
+          setFilteredData(parsedData);
+          setLoading(false);
+        },
+        error: (err) => {
+          setError("Error parsing CSV file");
+          console.error(err);
+        },
+      });
+    } catch (err) {
+      setError("Error fetching CSV file");
+      console.error(err);
+    }
+  };
+
+  const filterRow = (row) => {
+    return (
+      !/[a-zA-Z]/.test(row.stop_id) &&
+      row.stop_desc != null &&
+      !row.stop_name?.toLowerCase().includes("lift") &&
+      !row.stop_name?.toLowerCase().includes("scări")
+    );
+  };
+
+  const handleSearchClick = () => {
+    const updatedData = data.filter(
+      (row) => filterRow(row) && row.stop_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredData(updatedData);
+  };
+
+  const Row = ({ index, style }) => {
+    const row = filteredData[index];
+    return (
+      <div
+        style={style}
+        className={`flex flex-col justify-evenly items-center ${
+          index % 2 === 0 ? "bg-[#292929]" : ""
+        } rounded-l mb-1`}
+      >
+        <span className="font-bold text-red-500">{row.stop_id}</span>
+        <span>"{row.stop_name}"</span>
+        <a
+          href={
+            row.stop_lon && row.stop_lat
+              ? `https://www.google.com/maps/search/${row.stop_lat},${row.stop_lon}`
+              : ""
+          }
+        >
+          <span className="text-s">{row.stop_desc}</span>
+        </a>
+      </div>
+    );
+  };
+
+  return (
+    <div className="max-h-[300px] overflow-hidden ">
+      <div className="flex flex-row items-center justify-center mb-2">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Scrie numele unei statii"
+          className="h-[35px] border-none rounded-l-md pl-2 focus:outline-none placeholder-gray bg-[#404040]"
+        />
+        <motion.button
+          onClick={handleSearchClick}
+          className="bg-white text-black h-[35px] w-[100px] rounded-r-md hover:bg-gray-200 focus:outline-none"
+          whileHover={{ scale: 1.1 }}
+        >
+          Caută
+        </motion.button>
+      </div>
+
+      {error && <p>{error}</p>}
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <List
+          height={250} 
+          itemCount={filteredData.length} 
+          itemSize={80}
+          width="100%" 
+          className="scrollbar-hide"
+        >
+          {Row}
+        </List>
+      )}
+    </div>
+  );
+};
+
 
 
 
@@ -96,6 +215,7 @@ const LinesComponent = ({  stationID, onRemove, onNull, directionVisible  }) => 
 };
 
 const Main = () => {
+  const [chooseIDVisible, setChooseIDVisible] = useState(false);
   const [footerVisible, setFooterVisible] = useState(true);
   const [titleVisible, setTitleVisible] = useState(true);
   const [isButtonVisible, setIsButtonVisible] = useState(true);
@@ -136,6 +256,7 @@ const Main = () => {
 
   const handleClosePopup = () => {
       setIsPopupVisible(false);
+      setChooseIDVisible(false);
   };
 
   const handleCloseSettings = () => {
@@ -145,6 +266,7 @@ const Main = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsPopupVisible(false);
+    setChooseIDVisible(false);
     if(id !== '') {
       if(submittedIDs.includes(id)) {
         setIsErrorVisible(true);
@@ -188,50 +310,88 @@ const Main = () => {
     }
   }
 
-
+const handleIDUnknownClick = () => {
+  setChooseIDVisible(true);
+}
+const handleIDUnknownClose = () => {
+  setChooseIDVisible(false);
+};
 
   return (
     <>
     <AnimatePresence>
       {isPopupVisible && (
-                  <form onSubmit={handleSubmit} >
 
       <motion.div
-            className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex justify-center items-center"
+            className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex justify-center items-center "
             initial={{ backdropFilter: "blur(0px)", opacity: 0 }}
             animate={{ backdropFilter: "blur(10px)", opacity: 1 }}
             exit={{ backdropFilter: "blur(0px)", opacity: 0 }}
             transition={{ duration: 0.3 }}
           >     
-             <motion.div
-          className="bg-[#262626] rounded-xl text-center w-96 max-w-lg shadow-lg"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 40 }}
-        >
-        <div className="w-full h-5 flex justify-end">
+          <motion.div
+            className="bg-[#262626] rounded-xl text-center w-96 max-w-lg shadow-lg h-[250px]"
+            layout
+            initial={{ scale: 0, opacity: 0, x: 0 }}
+            animate={{ scale: 1, opacity: 1, x: chooseIDVisible ? -50 : 0 }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 150, damping: 20 }}
+          >
+        <div className="w-full h-3 flex justify-end">
           <a className="p-4 cursor-pointer" onClick={handleClosePopup}>
-            <span className="text-white font-black select-none">X</span>
+            <span className="text-white font-black select-none">✕</span>
           </a>
         </div>   
           <div className="p-8">
+          <form onSubmit={handleSubmit} >
+
           <h2 className="text-xl font-semibold mb-4 text-white">Introduce ID-ul liniei pe care vrei sa o urmaresti</h2>
           <div className="flex items-center justify-center">
-          <input type="number" value={id} onChange={(e) => setId(e.target.value)}  id="first_name" className="bg-[#404040] h-8 placeholder-[#919EF1] text-[#919EF1] text-[12px] lg:text-sm  rounded-lg border-gray-200 focus:border-transparent focus:ring-0 outline-none block w-[60px] pl-2.5 " placeholder="12354" required />
+          <input type="number" value={id} onChange={(e) => setId(e.target.value)}  id="first_name" className="bg-[#404040] h-8 placeholder-gray text-[#919EF1] text-[12px] lg:text-sm  rounded-lg border-gray-200 focus:border-transparent focus:ring-0 outline-none block w-[60px] pl-2.5 " placeholder="12354" required />
           </div>
+          <div className="flex flex-col gap-2 mt-5 items-center">
           <motion.button
             type="submit"
-            className="mt-5 bg-white text-black px-6 py-2 rounded-full hover:bg-gray-200 focus:outline-none"
+            className="bg-white text-black px-6 py-2 rounded-full hover:bg-gray-200 focus:outline-none"
             whileHover={{ scale: 1.1 }}
 
           >
             Adaugă
           </motion.button>
+          <span className="text-gray-400 text-sm cursor-pointer" onClick={handleIDUnknownClick}>Nu știi ID-ul stației?</span>
           </div>
+          </form>
+          </div>
+
+
         </motion.div>
+        {chooseIDVisible && (
+                          <motion.div
+                  className="bg-[#212121] rounded-xl w-[450px] max-w-lg shadow-lg h-[450px] relative"
+                  layout
+                  initial={{ x: -50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ opacity: 0, scale: 0 }}
+                  transition={{ type: 'spring', stiffness: 150, damping: 20 }}
+                >
+                  <button
+                  onClick={handleIDUnknownClose}
+                    className="absolute top-3 right-5 bg-transparent text-white text-l font-bold focus:outline-none"
+                  >
+                    ✕
+                  </button>
+
+                  <div className="flex flex-col items-center mt-5 px-5 ">
+                  <h1 className="text-xl font-black">Caută stația</h1>
+                  <h2 className="text-sm mb-5">Aici îți poți căuta ID-ul stației favorite.</h2>
+                  <CsvLoader />
+                  <p className="text-xs mt-2">Apasă pe adresă pentru a vedea locația exactă.</p>
+                  <p className="text-red-500 text-xs">Unele ID-uri pot fi greșite sau inexistente.</p>
+                  </div>
+                </motion.div>
+        )}
+        
         </motion.div>
-        </form>
       )}
       </AnimatePresence>
       <AnimatePresence>
@@ -252,7 +412,7 @@ const Main = () => {
       >
         <div className="w-full h-3 flex justify-end">
           <a className="p-4 cursor-pointer" onClick={handleCloseSettings}>
-            <span className="text-white font-black select-none">X</span>
+            <span className="text-white font-black select-none">✕</span>
           </a>
         </div>
         <div className="p-8">
